@@ -2,7 +2,6 @@ import os
 import numpy as np
 from torch import nn
 from torch.utils.data import Dataset
-from utils.misc import normalize
 
 class AutoencoderDataset(Dataset):
     def __init__(self, DATA_DIR, transform=None, target_transform=None):
