@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from autoencoder import ConvAutoencoder
+from models.autoencoder import ConvAutoencoder
 
 
 # Carregue o dataset
