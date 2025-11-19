@@ -21,6 +21,26 @@ class TGAFeatureExtractor(nn.Module, ABC):
         Returns the latent vector (feature encoding).
         """
         pass
+
+    def compute_loss(self, output, target, **kwargs):
+        """
+        Computes the loss for the model.
+        Handles standard reconstruction (MSE) and VAE (MSE + KLD) if output is a tuple.
+        """
+        if isinstance(output, tuple) and len(output) == 3:
+            recon_x, mu, logvar = output
+            criterion = nn.MSELoss()
+            mse_loss = criterion(recon_x, target)
+            
+            # KL Divergence
+            kld_weight = kwargs.get('kld_weight', 0.0)
+            kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            kld_loss /= recon_x.size(0)
+            
+            return mse_loss + kld_weight * kld_loss
+            
+        criterion = nn.MSELoss()
+        return criterion(output, target)
     
     def save_checkpoint(self, path, optimizer=None, epoch=None, loss=None):
         """Standardized saving."""

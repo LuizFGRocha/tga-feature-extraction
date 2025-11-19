@@ -5,8 +5,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 import os
+import sys
 
-# Import from your new structure
+# add project root to path to import from scripts/
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from models.factory import get_model
 from src.dataset import TGADataset
 
@@ -14,7 +17,7 @@ def train(args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"Training {args.model_name} on {device}")
 
-    # 1. Setup Data
+    # setup Data
     dataset = TGADataset(data_path=args.data_path)
     train_size = int(0.9 * len(dataset))
     test_size = len(dataset) - train_size
@@ -23,12 +26,10 @@ def train(args):
     train_dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     test_dl = DataLoader(test_ds, batch_size=args.batch_size)
 
-    # 2. Setup Model via Factory
+    # setup model via factory
     model = get_model(args.model_name, compressed_dim=args.latent_dim)
     model.double().to(device)
 
-    # 3. Setup Loop
-    criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     writer = SummaryWriter(f"runs/{args.model_name}_exp")
     
@@ -49,31 +50,42 @@ def train(args):
             
             optimizer.zero_grad()
             output = model(x)
-            loss = criterion(output, target)
+            
+            loss = model.compute_loss(output, target, kld_weight=args.kld_weight)
+
             loss.backward()
             optimizer.step()
             
             train_loss += loss.item()
             global_step += 1
 
-        # Logging
         writer.add_scalar('Loss/train', train_loss / len(train_dl), epoch)
+
+        for data in test_dl:
+            x, target = data
+            x, target = x.to(device), target.to(device)
+            output = model(x)
+            
+            loss = model.compute_loss(output, target, kld_weight=args.kld_weight)
+            
+            writer.add_scalar('Loss/test', loss.item(), epoch)
         
         if epoch == args.epochs - 1: # Save at end
             final_path = os.path.join(save_dir, "final.pth")
             model.save_checkpoint(final_path, optimizer, epoch, train_loss)
             
-    return final_path # <--- IMPORTANT: Return the path
+    return final_path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, required=True, help="attention_unet or autoencoder")
+    parser.add_argument("--model_name", type=str, required=True)
     parser.add_argument("--data_path", type=str, default="./data/tga/data.npz")
     parser.add_argument("--epochs", type=int, default=1500)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--latent_dim", type=int, default=64)
     parser.add_argument("--save_interval", type=int, default=100)
+    parser.add_argument("--kld_weight", type=float, default=0.00025, help="Weight for KL Divergence loss in VAE")
     
     args = parser.parse_args()
     train(args)

@@ -16,15 +16,14 @@ LEADERBOARD_PATH = "experiments_leaderboard.csv"
 def main():
     parser = argparse.ArgumentParser(description="Run a full TGA experiment: Train -> Eval -> Log")
     
-    # Model Args
     parser.add_argument("--model_name", type=str, required=True, help="Name of model in factory")
     parser.add_argument("--latent_dim", type=int, default=64)
     parser.add_argument("--note", type=str, default="", help="Short description of this experiment")
     
-    # Training Args
     parser.add_argument("--epochs", type=int, default=1500)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--kld_weight", type=float, default=0.00025, help="Weight for KL Divergence loss in VAE")
     
     args = parser.parse_args()
 
@@ -34,13 +33,8 @@ def main():
     
     print(f"=== Starting Experiment: {run_id} ===")
     
-    # ---------------------------------------------------------
-    # 1. TRAINING
-    # ---------------------------------------------------------
     print("\n[1/3] Starting Training...")
     
-    # We need to modify train.py slightly to accept an 'args' object programmatically 
-    # or we construct a namespace object here.
     train_args = argparse.Namespace(
         model_name=args.model_name,
         data_path="./data/tga/data.npz",
@@ -49,18 +43,13 @@ def main():
         lr=args.lr,
         latent_dim=args.latent_dim,
         save_interval=500,
-        run_id=run_id # Pass run_id to save checkpoint specifically for this run
+        run_id=run_id, # Pass run_id to save checkpoint specifically for this run
+        kld_weight=args.kld_weight
     )
     
-    # Run training and get the path to the best/final checkpoint
-    # You need to update train.py to return the path of the saved model
     checkpoint_path = train(train_args) 
     
     print(f"Training finished. Checkpoint saved at: {checkpoint_path}")
-
-    # ---------------------------------------------------------
-    # 2. EVALUATION
-    # ---------------------------------------------------------
     print("\n[2/3] Starting Evaluation...")
     
     eval_args = argparse.Namespace(
@@ -71,18 +60,9 @@ def main():
         method='bootstrap'
     )
     
-    # Run evaluation and get a dictionary of results
-    # You need to update evaluate.py to return the results dict
     eval_results = run_evaluation(eval_args)
     
-    # ---------------------------------------------------------
-    # 3. LOGGING
-    # ---------------------------------------------------------
     print("\n[3/3] Logging Results...")
-    
-    # Flatten results for CSV
-    # eval_results is likely a list of dicts. Let's flatten it.
-    # Example: {'Height Mean': 0.85, 'Area Mean': 0.72}
     
     log_entry = {
         "timestamp": timestamp,
