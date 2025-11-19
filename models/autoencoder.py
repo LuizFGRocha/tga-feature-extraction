@@ -3,6 +3,8 @@ import numpy as np
 from torch import nn
 from torch.utils.data import Dataset
 
+from models.base import TGAFeatureExtractor
+
 class AutoencoderDataset(Dataset):
     def __init__(self, DATA_DIR, transform=None, target_transform=None):
         self.X = None
@@ -26,9 +28,10 @@ class AutoencoderDataset(Dataset):
     
 
 
-class ConvAutoencoder(nn.Module):
+class ConvAutoencoder(TGAFeatureExtractor):
     def __init__(self):
         super().__init__()
+
         # encoder
         self.conv1 = nn.Sequential(nn.Conv1d(2, 32, 7, padding='same'), nn.LeakyReLU())
         self.pool1 = nn.MaxPool1d(2, 2, return_indices=True)

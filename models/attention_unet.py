@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from abc import ABC
 
+from models.base import TGAFeatureExtractor
+
 
 class AttentionBlock(nn.Module):
     def __init__(self, F_g, F_l, F_int):
@@ -62,9 +64,10 @@ class UpConv(nn.Module):
         return self.up(x)
 
 
-class AttentionUNet(nn.Module):
+class AttentionUNet(TGAFeatureExtractor):
     def __init__(self, ch_in=2, ch_out=2, compressed_dim=64):
         super(AttentionUNet, self).__init__()
+        self.config = {'ch_in': ch_in, 'ch_out': ch_out, 'compressed_dim': compressed_dim}
         
         self.Maxpool = nn.MaxPool1d(kernel_size=2, stride=2)
         

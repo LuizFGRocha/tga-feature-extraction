@@ -1,0 +1,2 @@
+timestamp,run_id,model,latent_dim,epochs,lr,note,checkpoint,Height Mean (R2),Height Mean (Low CI),Height Mean (High CI),Min Ferret Skewness (R2),Min Ferret Skewness (Low CI),Min Ferret Skewness (High CI),Area Mean (R2),Area Mean (Low CI),Area Mean (High CI),Volume Mean (R2),Volume Mean (Low CI),Volume Mean (High CI)
+20251118_195609,attention_unet_20251118_195609,attention_unet,64,1,0.001,Sanity Check,checkpoints/attention_unet/attention_unet_20251118_195609/final.pth,-0.9747,-3.8115,0.3101,-2.2907,-11.6279,0.0267,-1.127,-4.6028,0.2112,-1.4675,-7.2738,0.3907
