@@ -2,6 +2,11 @@ from models.attention_unet import AttentionUNet
 from models.autoencoder import ConvAutoencoder
 from models.variational_autoencoder import VAE
 from models.bigger_variational_autoencoder import Bigger_VAE
+from models.supervised_cnn import SupervisedCNN
+from models.small_variational_autoencoder import SmallVAE
+from models.micro_variational_autoencoder import MicroVAE
+from models.nano_variational_autoencoder import NanoVAE
+from models.even_smaller_variational_autoencoder import EvenSmallerVAE
 
 def get_model(model_name, **kwargs):
     """
@@ -19,5 +24,15 @@ def get_model(model_name, **kwargs):
         return VAE(**kwargs)
     elif model_name == 'bigger_variational_autoencoder':
         return Bigger_VAE(**kwargs)
+    elif model_name == 'supervised_cnn':
+        return SupervisedCNN()
+    elif model_name == 'small_variational_autoencoder':
+        return SmallVAE(**kwargs)
+    elif model_name == 'micro_variational_autoencoder':
+        return MicroVAE(**kwargs)
+    elif model_name == 'nano_variational_autoencoder':
+        return NanoVAE(**kwargs)
+    elif model_name == 'even_smaller_variational_autoencoder':
+        return EvenSmallerVAE(**kwargs)
     else:
-        raise ValueError(f"Unknown model name: {model_name}. Available: ['attention_unet', 'autoencoder', 'variational_autoencoder']")
+        raise ValueError(f"Unknown model name: {model_name}.")

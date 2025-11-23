@@ -29,7 +29,7 @@ def main():
 
     # Generate a unique Run ID
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_id = f"{args.model_name}_{timestamp}"
+    run_id = f"{args.model_name}_{timestamp}_{args.latent_dim}dim"
     
     print(f"=== Starting Experiment: {run_id} ===")
     

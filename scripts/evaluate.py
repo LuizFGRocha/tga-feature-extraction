@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import from the new modular structure
 from models.factory import get_model
 from src.dataset import TGADataset
-from src.evaluation import evaluate_with_bootstrap, evaluate_with_cv
+from src.evaluation import evaluate_with_bootstrap, evaluate_with_cv, evaluate_with_loo, visualize_1d_fit
 
 def generate_encodings(model, data_loader, device):
     """
@@ -58,10 +58,16 @@ def run_evaluation(args):
 
     # Define Targets
     label_configs = [
+        {'name': 'Min Ferret Mean',   'data': Y[:, 0, 0]},
+        {'name': 'Max Ferret Mean',   'data': Y[:, 1, 0]},
         {'name': 'Height Mean',       'data': Y[:, 2, 0]},
-        {'name': 'Min Ferret Skewness', 'data': Y[:, 0, 2]},
         {'name': 'Area Mean',         'data': Y[:, 3, 0]},
         {'name': 'Volume Mean',       'data': Y[:, 4, 0]},
+        {'name': 'Min Ferret Median', 'data': Y[:, 0, 1]},
+        {'name': 'Max Ferret Median', 'data': Y[:, 1, 1]},
+        {'name': 'Height Median',     'data': Y[:, 2, 1]},
+        {'name': 'Area Median',       'data': Y[:, 3, 1]},
+        {'name': 'Volume Median',     'data': Y[:, 4, 1]}
     ]
     
     # Run Evaluation
@@ -73,8 +79,12 @@ def run_evaluation(args):
         
         if args.method == 'bootstrap':
             mean_r2, lower_ci, upper_ci = evaluate_with_bootstrap(encodings_scaled, labels)
-        else:
+        elif args.method == 'cv':
             mean_r2, lower_ci, upper_ci = evaluate_with_cv(encodings_scaled, labels)
+        elif args.method == 'loo':
+            mean_r2, lower_ci, upper_ci = evaluate_with_loo(encodings_scaled, labels)
+
+        visualize_1d_fit(encodings_scaled, labels, split_seed=42)
             
         results.append({
             'Target Property': config['name'],
@@ -91,7 +101,7 @@ def main():
     parser.add_argument('--checkpoint_path', type=str, required=True, help='Path to the .pth checkpoint.')
     parser.add_argument('--data_path', type=str, default='./data/tga_afm/data.npz', help='Path to the evaluation dataset (must contain X and Y).')
     parser.add_argument('--latent_dim', type=int, default=64, help='Dimension of the latent space.')
-    parser.add_argument('--method', type=str, default='bootstrap', choices=['bootstrap', 'cv'], help='Evaluation method.')
+    parser.add_argument('--method', type=str, default='loo', choices=['bootstrap', 'cv', 'loo'], help='Evaluation method.')
     args = parser.parse_args()
 
     results = run_evaluation(args)
