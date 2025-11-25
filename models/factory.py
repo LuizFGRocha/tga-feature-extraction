@@ -7,6 +7,7 @@ from models.small_variational_autoencoder import SmallVAE
 from models.micro_variational_autoencoder import MicroVAE
 from models.nano_variational_autoencoder import NanoVAE
 from models.even_smaller_variational_autoencoder import EvenSmallerVAE
+from models.semi_supervised_vae import SemiSupervisedVAE
 
 def get_model(model_name, **kwargs):
     """
@@ -34,5 +35,7 @@ def get_model(model_name, **kwargs):
         return NanoVAE(**kwargs)
     elif model_name == 'even_smaller_variational_autoencoder':
         return EvenSmallerVAE(**kwargs)
+    elif model_name == 'semi_supervised_vae':
+        return SemiSupervisedVAE(**kwargs)
     else:
         raise ValueError(f"Unknown model name: {model_name}.")
